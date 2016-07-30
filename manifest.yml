@@ -1,8 +1,7 @@
 ---
 applications:
-- name: springmusic
+- name: kbspringmusic
   memory: 1G
-  host: springmusic
-  domain: cfapps.io
+  host: kbspringmusic
   path: build/libs/spring-music.jar
 
