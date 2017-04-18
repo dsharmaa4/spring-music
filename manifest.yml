@@ -1,7 +1,7 @@
 ---
 applications:
-- name: spring-music
+- name: kbspringmusic
   memory: 1G
-  random-route: true
+  host: kbspringmusic
   path: build/libs/spring-music.jar
 
