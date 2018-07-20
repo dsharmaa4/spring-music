@@ -1,7 +1,9 @@
 ---
 applications:
 - name: spring-music
-  memory: 1G
+  memory: 512m
+  disk: 512m
   random-route: true
   path: build/libs/spring-music-1.0.jar
-
+  env:
+    APPLICATION_INSIGHTS_IKEY: APPLICATION_INSIGHTS_IKEY
