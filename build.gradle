@@ -50,6 +50,7 @@ dependencies {
     runtime "mysql:mysql-connector-java"
     runtime "org.postgresql:postgresql"
     runtime "com.microsoft.sqlserver:mssql-jdbc"
+    runtime "org.apache.commons:commons-pool2"
 
     // Webjars
     compile "org.webjars:bootstrap:3.1.1"
