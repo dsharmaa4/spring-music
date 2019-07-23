@@ -24,7 +24,7 @@ One Spring bean profile should be activated to choose the database provider that
 The application can be started locally using the following command:
 
 ~~~
-$ java -jar -Dspring.profiles.active=<postgres> build/libs/spring-music.jar
+$ java -jar -Dspring.profiles.active=<profile> build/libs/spring-music.jar
 ~~~
 
 where `<profile>` is one of the following values:
