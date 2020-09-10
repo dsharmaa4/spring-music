@@ -1,7 +1,7 @@
 [
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Nirvana",
+        "artist": "Dan",
         "title": "Nevermind",
         "releaseYear": "1991",
         "genre": "Rock"
