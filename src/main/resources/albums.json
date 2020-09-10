@@ -1,7 +1,7 @@
 [
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Dan",
+        "artist": "dj",
         "title": "Nevermind",
         "releaseYear": "1991",
         "genre": "Rock"
