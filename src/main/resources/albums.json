@@ -57,7 +57,7 @@
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Arctiq",
+        "artist": "Michael Jackson",
         "title": "Thriller",
         "releaseYear": "1982",
         "genre": "Pop"
