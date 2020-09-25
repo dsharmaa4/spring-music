@@ -68,6 +68,6 @@ dependencies {
 }
 
 jar {
-    archiveBaseName = "spring-music"
+    archiveBaseName = "spring-music-1.0"
     archiveVersion = "" // omit the version from the war file name
 }

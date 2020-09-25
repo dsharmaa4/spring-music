@@ -15,10 +15,10 @@ management:
 spring:
   profiles: mysql
   datasource:
-    url: "jdbc:mysql://localhost/music"
+    url: "jdbc:mysql://localhost/music?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC"
     driver-class-name: com.mysql.jdbc.Driver
     username:
-    password: 
+    password:
   jpa:
     properties:
       hibernate:
