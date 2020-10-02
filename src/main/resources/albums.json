@@ -1,21 +1,21 @@
 [
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Arctiq",
+        "artist": "Daniyal",
         "title": "Nevermind",
         "releaseYear": "1991",
         "genre": "Rock"
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "The Beach Boys",
+        "artist": "Aly",
         "title": "Pet Sounds",
         "releaseYear": "1966",
         "genre": "Rock"
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Marvin Gaye",
+        "artist": "Kyle",
         "title": "What's Going On",
         "releaseYear": "1971",
         "genre": "Rock"
