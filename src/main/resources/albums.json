@@ -8,14 +8,14 @@
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Google",
+        "artist": "The Beach Boys",
         "title": "Pet Sounds",
         "releaseYear": "1966",
         "genre": "Rock"
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Daniyal",
+        "artist": "Marvin Gaye",
         "title": "What's Going On",
         "releaseYear": "1971",
         "genre": "Rock"
@@ -57,7 +57,7 @@
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Arctiq",
+        "artist": "Michael Jackson",
         "title": "Thriller",
         "releaseYear": "1982",
         "genre": "Pop"
