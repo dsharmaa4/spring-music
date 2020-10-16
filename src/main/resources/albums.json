@@ -43,7 +43,7 @@
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Fleetwood Mac",
+        "artist": "Google",
         "title": "Rumours",
         "releaseYear": "1977",
         "genre": "Rock"
