@@ -37,7 +37,7 @@
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
         "artist": "The Beatles",
-        "title": "Abbey Road",
+        "title": "Arctiq",
         "releaseYear": "1969",
         "genre": "Rock"
     },
