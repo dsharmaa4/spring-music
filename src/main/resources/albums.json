@@ -1,7 +1,7 @@
 [
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Daniyal",
+        "artist": "Nirvana",
         "title": "Nevermind",
         "releaseYear": "1991",
         "genre": "Rock"
@@ -15,28 +15,28 @@
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Murriel",
+        "artist": "Marvin Gaye",
         "title": "What's Going On",
         "releaseYear": "1971",
         "genre": "Rock"
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Aly",
+        "artist": "Jimi Hendrix Experience",
         "title": "Are You Experienced?",
         "releaseYear": "1967",
         "genre": "Rock"
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Robin",
+        "artist": "U2",
         "title": "The Joshua Tree",
         "releaseYear": "1987",
         "genre": "Rock"
     },
     {
         "_class": "org.cloudfoundry.samples.music.domain.Album",
-        "artist": "Micah",
+        "artist": "The Beatles",
         "title": "Abbey Road",
         "releaseYear": "1969",
         "genre": "Rock"
