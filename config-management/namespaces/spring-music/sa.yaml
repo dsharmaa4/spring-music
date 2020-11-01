@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  labels:
+    app.kubernetes.io/component: serviceaccount
+    app.kubernetes.io/managed-by: kf
+    app.kubernetes.io/name: spring-music
+  name: sa-spring-music
+secrets:
+- name: sa-spring-music-token-nqrlg
+
