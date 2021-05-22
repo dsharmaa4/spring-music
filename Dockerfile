@@ -37,3 +37,4 @@ RUN gradle clean assemble \
 
 CMD java -jar -Dspring.profiles.active="in-memory" -Dserver.port=4000 /app.jar
 #CMD java -jar -Dspring.profiles.active="postgres" /app.jar
+# The above represents configuration WITHIN the container binary. Naughty.
