@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spring-music
+  namespace: SOME_INVALID_NAMESPACE_REPLACE_ME
 spec:
   replicas: 2
   selector:
