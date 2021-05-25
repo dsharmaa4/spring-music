@@ -23,5 +23,3 @@ spec:
           imagePullPolicy: Always
           ports:
             - containerPort: 4000
-      imagePullSecrets:
-        - name: docker-registry-adamfowler
