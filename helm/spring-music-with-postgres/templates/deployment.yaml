@@ -1,0 +1,96 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "spring-music-with-postgres.fullname" . }}
+  labels:
+    {{- include "spring-music-with-postgres.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.autoscaling.enabled }}
+  replicas: {{ .Values.replicaCount }}
+  {{- end }}
+  minReadySeconds: {{ .Values.service.minReadySeconds }}
+  selector:
+    matchLabels:
+      {{- include "spring-music-with-postgres.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "spring-music-with-postgres.selectorLabels" . | nindent 8 }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "spring-music-with-postgres.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      initContainers: # Ensure postgres is created and initialised else service and secrets will not exist, and app pod startup will fail. See https://kubernetes.io/docs/concepts/workloads/pods/init-containers/
+        - name: {{ .Chart.Name }}-init-postgres
+          image: alpine
+          imagePullPolicy: IfNotPresent
+          command: [ "sh", "-c", "for i in $(seq 1 200); do nc -z -w3 {{ .Release.Name }}-postgresql {{ .Values.postgresql.service.port }} && exit 0 || sleep 3; done; exit 1" ]
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+            {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          # livenessProbe:
+          #   httpGet:
+          #     #path: /actuator/health
+          #     path: /
+          #     port: http
+          # readinessProbe:
+          #   httpGet:
+          #     #path: /actuator/health/readiness
+          #     path: /
+          #     port: http
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          env:
+          - name: PORT
+            value: "4000"
+          - name: POSTGRES_HOST
+            value: {{ .Release.Name }}-postgresql
+          - name: POSTGRES_PORT
+            value: "{{ .Values.postgresql.service.port }}"
+          - name: POSTGRES_DATABASE
+            value: {{ .Values.postgresql.postgresqlDatabase }}
+          - name: POSTGRES_USERNAME
+            value: {{ .Values.postgresql.postgresqlUsername }}
+          - name: POSTGRES_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Release.Name }}-postgresql
+                key: postgresql-password
+          # Spring uses a temp dir. Read only FS causes spring (tomcat) to fail
+          # See https://github.com/spring-projects/spring-boot/issues/8578
+          # Workaround is empty dir, as per the below (ephemeral temp store)
+          # WARNING ALL CONTAINERS ON THE SAME NODE CAN READ/WRITE THIS FOLDER!
+          # Also note that a pod failure doesn't clear the folder, only a reboot
+          volumeMounts:
+          - name: tomcat-temp-volume
+            mountPath: /tmp
+      volumes:
+      - name: tomcat-temp-volume
+        emptyDir: {}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

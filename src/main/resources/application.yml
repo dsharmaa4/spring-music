@@ -2,6 +2,10 @@ spring:
   jpa:
     generate-ddl: true
 
+# From spring boot 2.3+, see: https://hackmd.io/@ryanjbaxter/spring-on-k8s-workshop#Handling-In-Flight-Requests
+server:
+  shutdown: graceful
+
 management:
   endpoints:
     web:
@@ -15,8 +19,8 @@ management:
 spring:
   profiles: mysql
   datasource:
-    url: "jdbc:mysql://localhost/music"
     driver-class-name: com.mysql.jdbc.Driver
+    url: "jdbc:mysql://localhost/music"
     username:
     password: 
   jpa:
@@ -26,12 +30,37 @@ spring:
 
 ---
 spring:
+  profiles: mysql-k8s
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: "jdbc:mysql://${${MYSQL_SERVICE}.service.host}:${${MYSQL_SERVICE}.service.port}/${MYSQL_DB_NAME}"
+    username: ${MYSQL_DB_USER}
+    password: ${MYSQL_DB_PASSWORD}
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.MySQL55Dialect
+
+---
+spring:
   profiles: postgres
   datasource:
-    url: "jdbc:postgresql://localhost/music"
     driver-class-name: org.postgresql.Driver
+    url: "jdbc:postgresql://localhost/music"
     username: postgres
     password: 
+  jpa:
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.ProgressDialect
+---
+spring:
+  profiles: postgres-k8s
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: "jdbc:postgresql://${POSTGRES_HOST}:${POSTGRES_PORT}/${POSTGRES_DATABASE}"
+    username: ${POSTGRES_USERNAME}
+    password: ${POSTGRES_PASSWORD}
   jpa:
     properties:
       hibernate:

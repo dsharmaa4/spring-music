@@ -35,6 +35,6 @@ RUN gradle clean assemble \
 	&& mv build/libs/spring-music-1.0.jar /app.jar
 # The above leaves the source code in place... larger container image size
 
-CMD java -jar -Dspring.profiles.active="in-memory" -Dserver.port=4000 /app.jar
-#CMD java -jar -Dspring.profiles.active="postgres" /app.jar
+#CMD java -jar -Dspring.profiles.active="in-memory" -Dserver.port=4000 /app.jar
+CMD java -jar -Dspring.profiles.active="postgres-k8s" -Dserver.port=4000 /app.jar
 # The above represents configuration WITHIN the container binary. Naughty.

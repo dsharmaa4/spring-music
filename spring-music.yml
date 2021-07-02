@@ -22,5 +22,13 @@ spec:
         - name: spring-music
           image: docker.io/adamfowleruk/spring-music
           imagePullPolicy: Always
+          lifecycle: # See https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#deployment.cloud.kubernetes
+            preStop:
+              exec:
+                command: ["sh", "-c", "sleep 10"]
+          readinessProbe:
+            httpGet:
+              port: 4000
+              path: /actuator/health/readiness
           ports:
             - containerPort: 4000

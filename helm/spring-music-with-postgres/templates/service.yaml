@@ -1,0 +1,36 @@
+{{- if .Values.lb.enabled -}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "spring-music-with-postgres.fullname" . }}-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 4000
+      name: http
+  # selector: # We're load balancing the Service, so we don't target the app
+  #   name: {{ include "spring-music-with-postgres.fullname" . }}-svc
+  selector: 
+    {{- include "spring-music-with-postgres.selectorLabels" . | nindent 4 }}
+
+{{- else }}
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "spring-music-with-postgres.fullname" . }}-svc
+  labels:
+    {{- include "spring-music-with-postgres.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: 4000
+      protocol: TCP
+      name: http
+  selector: # we're linking to the app, so we use the app selector
+    {{- include "spring-music-with-postgres.selectorLabels" . | nindent 4 }}
+{{- end }}
+---

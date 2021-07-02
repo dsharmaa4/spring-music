@@ -38,6 +38,33 @@ If no profile is provided, an in-memory relational database will be used. If any
 
 If more than one of these profiles is provided, the application will throw an exception and fail to start.
 
+### Targetting Kubernetes
+
+If you are targetting Kubernetes instead of Cloud Foundry, then you can use these profiles instead:-
+
+* `mysql-k8s`
+* `postgres-k8s`
+
+These will use Kubernetes config map and secret variables instead of hardcoded values or values
+from the CF environment variables.
+
+## Running the application on Kubernetes
+
+A Helm chart is provided that sets up postgres and links it to the spring music app, with the generated security secret to access the database.
+
+```sh
+cd helm
+helm install springmusic ./spring-music-with-postgres --create-namespace -n sm
+kubectl get pods -n sm
+```
+
+LIMITATIONS:-
+
+- Assumes you have a loadbalancer auto config (E.g. on AWS EKS) - otherwise append `--set lb.enabled=false` in the `helm install` command 
+- Must use the `sm` namespace currently
+- Must manually delete the pvc for postgres in order for a new deployment to have the correct postgres password set `kubectl get pvc -n sm; kubectl delete pvc -n sm NAME`
+- Using admin postgres user instead of non-admin postgres user
+
 ## Running the application on Cloud Foundry
 
 When running on Cloud Foundry, the application will detect the type of database service bound to the application (if any). If a service of one of the supported types (MySQL, Postgres, Oracle, MongoDB, or Redis) is bound to the app, the appropriate Spring profile will be configured to use the database service. The connection strings and credentials needed to use the service will be extracted from the Cloud Foundry environment.
@@ -106,3 +133,10 @@ Database drivers for MySQL, Postgres, Microsoft SQL Server, MongoDB, and Redis a
 
 To connect to an Oracle database, you will need to download the appropriate driver (e.g. from http://www.oracle.com/technetwork/database/features/jdbc/index-091264.html). Then make a `libs` directory in the `spring-music` project, and move the driver, `ojdbc7.jar` or `ojdbc8.jar`, into the `libs` directory.
 In `build.gradle`, uncomment the line `compile files('libs/ojdbc8.jar')` or `compile files('libs/ojdbc7.jar')` and run `./gradle assemble`
+
+#### Further K8S Reading
+
+https://spring.io/projects/spring-cloud-kubernetes
+
+https://hackmd.io/@ryanjbaxter/spring-on-k8s-workshop
+
