@@ -28,13 +28,17 @@ COPY . /spring-music
 WORKDIR /spring-music
 # Value from WORKDIR name overrides the project name if it doesn't match, and thus the final JAR file name!
 
-EXPOSE 4000
+# EXPOSE 4000
 
 RUN gradle clean assemble \
 	&& pwd && ls build/libs \
 	&& mv build/libs/spring-music-1.0.jar /app.jar
 # The above leaves the source code in place... larger container image size
 
+ENV SPRING_PROFILE in-memory
+ENV PORT 4000
+
 #CMD java -jar -Dspring.profiles.active="in-memory" -Dserver.port=4000 /app.jar
-CMD java -jar -Dspring.profiles.active="postgres-k8s" -Dserver.port=4000 /app.jar
+#CMD java -jar -Dspring.profiles.active="postgres-k8s" -Dserver.port=4000 /app.jar
+CMD java -jar -Dspring.profiles.active="$SPRING_PROFILE" -Dserver.port=$PORT /app.jar
 # The above represents configuration WITHIN the container binary. Naughty.

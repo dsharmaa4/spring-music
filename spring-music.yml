@@ -26,9 +26,28 @@ spec:
             preStop:
               exec:
                 command: ["sh", "-c", "sleep 10"]
-          readinessProbe:
-            httpGet:
-              port: 4000
-              path: /actuator/health/readiness
+          # readinessProbe:
+          #   httpGet:
+          #     port: 4000
+          #     path: /actuator/health/readiness
           ports:
             - containerPort: 4000
+          env:
+          - name: PORT
+            value: "4000"
+          - name: SPRING_PROFILE
+            value: "in-memory"
+          #   value: "postgres-k8s"
+          # - name: POSTGRES_HOST
+          #   value: {{ .Release.Name }}-postgresql
+          # - name: POSTGRES_PORT
+          #   value: "{{ .Values.postgresql.service.port }}"
+          # - name: POSTGRES_DATABASE
+          #   value: {{ .Values.postgresql.postgresqlDatabase }}
+          # - name: POSTGRES_USERNAME
+          #   value: {{ .Values.postgresql.postgresqlUsername }}
+          # - name: POSTGRES_PASSWORD
+          #   valueFrom:
+          #     secretKeyRef:
+          #       name: {{ .Release.Name }}-postgresql
+          #       key: postgresql-password

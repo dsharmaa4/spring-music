@@ -58,6 +58,8 @@ spec:
           env:
           - name: PORT
             value: "4000"
+          - name: SPRING_PROFILE
+            value: "postgres-k8s"
           - name: POSTGRES_HOST
             value: {{ .Release.Name }}-postgresql
           - name: POSTGRES_PORT
