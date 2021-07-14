@@ -43,16 +43,14 @@ spec:
             - name: http
               containerPort: 4000
               protocol: TCP
-          # livenessProbe:
-          #   httpGet:
-          #     #path: /actuator/health
-          #     path: /
-          #     port: http
-          # readinessProbe:
-          #   httpGet:
-          #     #path: /actuator/health/readiness
-          #     path: /
-          #     port: http
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
           env:
