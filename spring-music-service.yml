@@ -2,7 +2,7 @@ apiVersion: v1
 kind: Service
 metadata:
   name: spring-music-service
-  namespace: SOME_INVALID_NAMESPACE_REPLACE_ME
+  namespace: sm-inmemory
 spec:
   type: LoadBalancer
   selector:

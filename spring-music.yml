@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: spring-music
-  namespace: SOME_INVALID_NAMESPACE_REPLACE_ME
+  namespace: sm-inmemory
 spec:
   replicas: 2
   selector:
@@ -22,16 +22,23 @@ spec:
         - name: spring-music
           image: docker.io/adamfowleruk/spring-music
           imagePullPolicy: Always
-          lifecycle: # See https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#deployment.cloud.kubernetes
-            preStop:
-              exec:
-                command: ["sh", "-c", "sleep 10"]
-          # readinessProbe:
-          #   httpGet:
-          #     port: 4000
-          #     path: /actuator/health/readiness
+          # lifecycle: # See https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#deployment.cloud.kubernetes
+          #   preStop:
+          #     exec:
+          #       command: ["sh", "-c", "sleep 10"]
+          #     protocol: TCP
           ports:
-            - containerPort: 4000
+            - name: http
+              containerPort: 4000
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: http
           env:
           - name: PORT
             value: "4000"
