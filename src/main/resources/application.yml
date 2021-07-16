@@ -6,6 +6,8 @@ spring:
 server:
   shutdown: graceful
 
+# Separating management actuator endpoints onto a non TLS port
+# See: https://docs.spring.io/spring-boot/docs/2.5.2/reference/html/actuator.html#actuator.monitoring.customizing-management-server-port
 management:
   endpoints:
     web:

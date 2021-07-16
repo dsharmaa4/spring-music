@@ -22,3 +22,8 @@ build/
 
 # Helm stuff
 helm/*/charts
+
+# Temp certs
+*.crt
+*.key
+*.csr

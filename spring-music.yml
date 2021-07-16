@@ -1,3 +1,18 @@
+apiVersion: v1
+kind: LimitRange
+metadata:
+  name: mem-limit-range
+  namespace: sm-inmemory
+spec:
+  limits:
+  - default:
+      memory: 16Mi
+      cpu: 100m
+    defaultRequest:
+      memory: 16Mi
+      cpu: 100m
+    type: Container
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,6 +30,14 @@ spec:
       maxSurge: "25%"
   template:
     metadata:
+      annotations:
+        # Only used if you have istio-injection=true as an annotation to your namespace
+        sidecar.istio.io/proxyCPU: "100m"
+        sidecar.istio.io/proxyCPULimit: "500m"
+        sidecar.istio.io/proxyMemory: "32Mi"
+        sidecar.istio.io/proxyMemoryLimit: "256Mi"
+        sidecar.istio.io/rewriteAppHTTPProbers: "false"
+        # The above is VITAL if Spring Actuator is running on the same port as your app
       labels:
         app: spring-music
     spec:
@@ -22,6 +45,13 @@ spec:
         - name: spring-music
           image: docker.io/adamfowleruk/spring-music
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "500m"
+            limits:
+              memory: "512Mi"
+              cpu: "1000m"
           # lifecycle: # See https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#deployment.cloud.kubernetes
           #   preStop:
           #     exec:

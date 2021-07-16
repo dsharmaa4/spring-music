@@ -58,12 +58,91 @@ helm install springmusic ./spring-music-with-postgres --create-namespace -n sm
 kubectl get pods -n sm
 ```
 
+By default this uses a LoadBalancer. You can change this configuration though - see service.yaml in the Helm chart for details.
+
+To list the ingress load balancer URL/IP for access, execute:-
+
+```sh
+kubectl get service -n sm spring-music-loadbalancer -o wide
+```
+
 LIMITATIONS:-
 
 - Assumes you have a loadbalancer auto config (E.g. on AWS EKS) - otherwise append `--set lb.enabled=false` in the `helm install` command 
 - Must use the `sm` namespace currently
 - Must manually delete the pvc for postgres in order for a new deployment to have the correct postgres password set `kubectl get pvc -n sm; kubectl delete pvc -n sm NAME`
 - Using admin postgres user instead of non-admin postgres user
+
+## (Optional) Secure ingress with istio
+
+If you have istio installed and injecting configuration into your Spring Music namespace, you can do the following to enable TLS ingress and mTLS between pods.
+
+```sh
+./gen-cert.sh                                                                                                                                                               ✔  took 6s   at 16:36:43 
+Generating a 4096 bit RSA private key
+............++
+........................................++
+writing new private key to 'adamfowler.co.uk.key'
+-----
+Generating a 4096 bit RSA private key
+.............................................................++
+...................................................................................................................................................................................++
+writing new private key to 'sm.adamfowler.co.uk.key'
+-----
+Signature ok
+subject=/CN=sm.adamfowler.co.uk/O=springmusic organization
+Getting CA Private Key
+
+kubectl create -n istio-system secret tls sm-tls-credential --key=sm.adamfowler.co.uk.key --cert=sm.adamfowler.co.uk.crt                          ✔  took 5s   at education-eks-9AHQJ9dw ⎈  at 16:42:20 
+secret/sm-tls-credential created
+
+kubectl apply -f spring-music-istio.yml                                                                                                           ✔  took 4s   at education-eks-9AHQJ9dw ⎈  at 16:44:30 
+gateway.networking.istio.io/sm-gateway configured
+virtualservice.networking.istio.io/spring-music-istio-svc unchanged
+destinationrule.networking.istio.io/spring-music-dest unchanged
+
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/addons/prometheus.yaml                                       ✔  took 10s   at education-eks-9AHQJ9dw ⎈  at 16:44:55 
+serviceaccount/prometheus created
+configmap/prometheus created
+clusterrole.rbac.authorization.k8s.io/prometheus unchanged
+clusterrolebinding.rbac.authorization.k8s.io/prometheus unchanged
+service/prometheus created
+deployment.apps/prometheus created
+
+kubectl apply -f https://raw.githubusercontent.com/istio/istio/release-1.10/samples/addons/kiali.yaml
+customresourcedefinition.apiextensions.k8s.io/monitoringdashboards.monitoring.kiali.io unchanged
+serviceaccount/kiali created
+configmap/kiali created
+clusterrole.rbac.authorization.k8s.io/kiali-viewer unchanged
+clusterrole.rbac.authorization.k8s.io/kiali unchanged
+clusterrolebinding.rbac.authorization.k8s.io/kiali unchanged
+role.rbac.authorization.k8s.io/kiali-controlplane created
+rolebinding.rbac.authorization.k8s.io/kiali-controlplane created
+service/kiali created
+deployment.apps/kiali created
+monitoringdashboard.monitoring.kiali.io/envoy created
+monitoringdashboard.monitoring.kiali.io/go created
+monitoringdashboard.monitoring.kiali.io/kiali created
+monitoringdashboard.monitoring.kiali.io/micrometer-1.0.6-jvm-pool created
+monitoringdashboard.monitoring.kiali.io/micrometer-1.0.6-jvm created
+monitoringdashboard.monitoring.kiali.io/micrometer-1.1-jvm created
+monitoringdashboard.monitoring.kiali.io/microprofile-1.1 created
+monitoringdashboard.monitoring.kiali.io/microprofile-x.y created
+monitoringdashboard.monitoring.kiali.io/nodejs created
+monitoringdashboard.monitoring.kiali.io/quarkus created
+monitoringdashboard.monitoring.kiali.io/springboot-jvm-pool created
+monitoringdashboard.monitoring.kiali.io/springboot-jvm created
+monitoringdashboard.monitoring.kiali.io/springboot-tomcat created
+monitoringdashboard.monitoring.kiali.io/thorntail created
+monitoringdashboard.monitoring.kiali.io/tomcat created
+monitoringdashboard.monitoring.kiali.io/vertx-client created
+monitoringdashboard.monitoring.kiali.io/vertx-eventbus created
+monitoringdashboard.monitoring.kiali.io/vertx-jvm created
+monitoringdashboard.monitoring.kiali.io/vertx-pool created
+monitoringdashboard.monitoring.kiali.io/vertx-server created
+
+./istioctl dashboard kiali
+```
 
 ## Running the application on Cloud Foundry
 
