@@ -40,6 +40,9 @@ dependencies {
     // Java CfEnv
     implementation "io.pivotal.cfenv:java-cfenv-boot:${javaCfEnvVersion}"
 
+    // Expose a Prometheus metrics endpoint for the Spring Boot Actuator
+    implementation "io.micrometer:micrometer-registry-prometheus"
+
     // JPA Persistence
     runtimeOnly "org.apache.commons:commons-pool2:2.6.0"
     runtimeOnly "com.h2database:h2"

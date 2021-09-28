@@ -82,6 +82,14 @@ Alternatively, the `./build_and_deploy_charm` automates the build and deploy (or
 
 Follow the [LMA Light on MicroK8s](https://juju.is/docs/lma2/on%20MicroK8s) tutorial together with the [offers overlay](https://github.com/canonical/lma-light-bundle/blob/main/overlays/offers-overlay.yaml).
 
+## Enable the monitoring of Spring Music
+
+```
+juju switch spring
+juju consume lma.prometheus-scrape prometheus
+juju add-relation spring-music prometheus
+```
+
 ## Utility scripts
 
 In the `./juju_utils/` folder there are three utility scripts to streamline some common development tasks:

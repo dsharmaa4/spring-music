@@ -26,6 +26,8 @@ from ops.model import (
 
 from kubernetes_service import K8sServicePatch, PatchFailed
 
+from src.main.charm_libs.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
+
 logger = logging.getLogger(__name__)
 
 
@@ -42,6 +44,21 @@ class SpringMusicCharm(CharmBase):
         self._port = 8080
 
         self._stored.set_default(k8s_service_patched=False)
+
+        self.metrics_endpoint = MetricsEndpointProvider(
+            self,
+            jobs=[
+                {
+                    # Adjust the default `/metrics` path to the one exposed
+                    # by the Spring Boot actuator.
+                    "metrics_path": "/actuator/prometheus",
+                    # The prometheus scrape library will automatically expand
+                    # the `*` symbol to the pod IPs of all the units of this
+                    # application.
+                    "static_configs": [{"targets": ["*:8080"]}],
+                },
+            ],
+        )
 
         self.framework.observe(
             self.on.install, self._on_install
