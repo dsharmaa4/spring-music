@@ -1,0 +1,59 @@
+#!/bin/bash
+
+set -e
+set -o pipefail
+
+if [ -z "${1}" ]
+then
+  1>&2 echo "No Juju unit provided in input.
+
+Usage specifying a Juju model:
+
+    ${0} <model>.<application>/<unit_id>
+
+  For example:
+
+    ${0} lma.prometheus/0
+
+Usage without specifying a Juju model, using instead the current model as returned by 'juju switch':
+
+    ${0} <application>/<unit_id>
+
+  For example:
+
+    ${0} prometheus/0
+  "
+  exit 1
+fi
+
+readonly JUJU_ADDRESS="${1}"
+
+if [[ "${JUJU_ADDRESS}" == *"."* ]]; then
+  JUJU_MODEL=$(echo "${JUJU_ADDRESS}" | cut -f1 -d.)
+  JUJU_APP_NAME=$(echo "${JUJU_ADDRESS}" | cut -f2 -d. | cut -f1 -d/ )
+  JUJU_UNIT_ORDINAL=$(echo "${JUJU_ADDRESS}" | cut -f2 -d. | cut -f2 -d/)
+else
+  JUJU_MODEL=$(juju switch | cut -f2 -d/)
+  JUJU_APP_NAME=$(echo "${JUJU_ADDRESS}" | cut -f1 -d/ )
+  JUJU_UNIT_ORDINAL=$(echo "${JUJU_ADDRESS}" | cut -f2 -d/)
+fi
+
+if ! (juju status -m "${JUJU_MODEL}" 2>&1 > /dev/null)
+then
+  1>&2 echo "The Juju model '${JUJU_MODEL}' does not exist"
+  exit 2
+fi
+
+if ! juju_unit_address=$(juju status -m ${JUJU_MODEL} --format=json 2>/dev/null | jq -e -r "[.applications.\"${JUJU_APP_NAME}\".units[]]? | .[${JUJU_UNIT_ORDINAL}].address")
+then
+  1>&2 echo "Cannot retrieve the unit address"
+  exit 3
+fi
+
+if ! juju_unit_port=$(microk8s.kubectl get service "${JUJU_APP_NAME}" -n "${JUJU_MODEL}" -o json | jq -e -r '.spec.ports | .[0].port')
+then
+  1>&2 echo "Cannot retrieve the unit port"
+  exit 4
+fi
+
+echo "${juju_unit_address}:${juju_unit_port}"  

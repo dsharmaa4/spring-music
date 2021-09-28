@@ -1,0 +1,27 @@
+#!/bin/bash
+
+set -euo pipefail
+
+readonly JUJU_MODEL="${1:-spring}"
+readonly JUJU_APPLICATION="${2:-spring-music}"
+
+if ! juju status -m "${JUJU_MODEL}" > /dev/null 2>&1; then
+    echo "The Juju model '${JUJU_MODEL}' does not exist"
+    exit 1
+fi
+
+if [ ! -f "metadata.yaml" ]
+then
+  1>&2 echo "No metadata.yaml file found in $(pwd); execute ${0} from the repository root"
+  exit 1
+fi
+
+charmcraft_output=$(charmcraft pack 2>&1 | tee /dev/stderr)
+
+charm_file=$(echo ${charmcraft_output} | awk 'BEGIN{FS="'\''"}{ print $2 }')
+
+if juju status -m "${JUJU_MODEL}" --format=json 2> /dev/null | jq -e ".applications | keys[] | select(. | test(\"${JUJU_APPLICATION}\"))" > /dev/null; then
+  juju refresh --path=./"${charm_file}" -m "${JUJU_MODEL}" "${JUJU_APPLICATION}"
+else
+  juju deploy ./"${charm_file}" -m "${JUJU_MODEL}" "${JUJU_APPLICATION}" --resource application-image=localhost:32000/spring-music
+fi

@@ -19,3 +19,14 @@ build/
 
 *.log*
 /classes/
+
+__pycache__
+.coverage
+.tox
+.pytest_cache
+
+*.charm
+manifest.yaml
+
+bin/
+.vscode/

@@ -1,0 +1,5 @@
+#!/bin/sh
+
+# Customized version of the dispatch script that adds "." to PYTHONPATH
+# so that the charm libraries in /src/main/charm_libs can also be loaded
+JUJU_DISPATCH_PATH="${JUJU_DISPATCH_PATH:-$0}" PYTHONPATH=lib:venv:. ./src/main/charm/charm.py
