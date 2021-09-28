@@ -87,7 +87,9 @@ Follow the [LMA Light on MicroK8s](https://juju.is/docs/lma2/on%20MicroK8s) tuto
 ```
 juju switch spring
 juju consume lma.prometheus-scrape prometheus
+juju consume lma.grafana-dashboards grafana
 juju add-relation spring-music prometheus
+juju add-relation spring-music grafana
 ```
 
 ## Utility scripts

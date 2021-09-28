@@ -26,6 +26,7 @@ from ops.model import (
 
 from kubernetes_service import K8sServicePatch, PatchFailed
 
+from src.main.charm_libs.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from src.main.charm_libs.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 
 logger = logging.getLogger(__name__)
@@ -61,6 +62,13 @@ class SpringMusicCharm(CharmBase):
             # This configuration would not be needed if the charm code would
             # reside under `<repo_root>/src`.
             alert_rules_path="src/main/charm_resources/prometheus_alert_rules",
+        )
+
+        self.dashboard_provider = GrafanaDashboardProvider(
+            self,
+            # This configuration would not be needed if the charm code would
+            # reside under `<repo_root>/src`.
+            dashboards_path="src/main/charm_resources/grafana_dashboards",
         )
 
         self.framework.observe(
