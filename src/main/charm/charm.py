@@ -58,6 +58,9 @@ class SpringMusicCharm(CharmBase):
                     "static_configs": [{"targets": ["*:8080"]}],
                 },
             ],
+            # This configuration would not be needed if the charm code would
+            # reside under `<repo_root>/src`.
+            alert_rules_path="src/main/charm_resources/prometheus_alert_rules",
         )
 
         self.framework.observe(
