@@ -2,6 +2,9 @@ spring:
   jpa:
     generate-ddl: true
 
+logging:
+  config: "classpath:logback-spring.xml"
+
 management:
   endpoints:
     web:
@@ -13,7 +16,9 @@ management:
 
 ---
 spring:
-  profiles: mysql
+  config:
+    activate:
+      on-profile: mysql
   datasource:
     url: "jdbc:mysql://localhost/music"
     driver-class-name: com.mysql.jdbc.Driver
@@ -26,7 +31,9 @@ spring:
 
 ---
 spring:
-  profiles: postgres
+  config:
+    activate:
+      on-profile: postgres
   datasource:
     url: "jdbc:postgresql://localhost/music"
     driver-class-name: org.postgresql.Driver
@@ -36,3 +43,12 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.ProgressDialect
+
+---
+spring:
+  config:
+    activate:
+      on-profile: loki-logging
+
+logging:
+  config: "classpath:logback-spring-loki.xml"

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>
+            %green(%d{yyyy-MM-dd HH:mm:ss}) %magenta([%thread]) %blue(%-5level) %yellow(%logger{36}) - %msg%n
+            </Pattern>
+        </layout>
+    </appender>
+
+    <logger name="com.github.loki4j" level="DEBUG" />
+
+
+    <!-- TODO: Support for multiple promtail endpoints-->
+    <!-- We use here a simple check for non blank string, as we may set LOKI_PUSH_API_URL to blank, so 'isDefined' may cause issues -->
+    <appender name="LOKI" class="com.github.loki4j.logback.Loki4jAppender">
+        <http>
+            <url>${LOKI_PUSH_API_URL}</url>
+        </http>
+        <format>
+            <label>
+                <pattern>juju_model=${JUJU_MODEL},juju_model_uuid=${JUJU_MODEL_UUID},juju_application=${JUJU_APPLICATION},juju_unit=${JUJU_UNIT},juju_charm=${JUJU_CHARM},level=%level</pattern>
+            </label>
+            <message>
+                <pattern>l=%level c=%logger{20} t=%thread | %msg %ex</pattern>
+            </message>
+            <sortByTime>true</sortByTime>
+        </format>
+        <metricsEnabled>true</metricsEnabled>
+        <batchTimeoutMs>500</batchTimeoutMs>
+        <verbose>true</verbose>
+    </appender>
+
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="LOKI" />
+    </root>
+
+</configuration>

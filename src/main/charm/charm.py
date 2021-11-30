@@ -27,6 +27,7 @@ from ops.model import (
 from kubernetes_service import K8sServicePatch, PatchFailed
 
 from src.main.charm_libs.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
+from src.main.charm_libs.loki_k8s.v0.loki_push_api import LokiPushApiConsumer
 from src.main.charm_libs.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
 
 logger = logging.getLogger(__name__)
@@ -45,6 +46,11 @@ class SpringMusicCharm(CharmBase):
         self._port = 8080
 
         self._stored.set_default(k8s_service_patched=False)
+
+        self.loki_consumer = LokiPushApiConsumer(
+            self,
+            alert_rules_path="src/main/charm_resources/loki_alert_rules",
+        )
 
         self.metrics_endpoint = MetricsEndpointProvider(
             self,
@@ -81,6 +87,15 @@ class SpringMusicCharm(CharmBase):
             self.on.upgrade_charm, self._on_upgrade_charm
         )
 
+        self.framework.observe(
+            self.loki_consumer.on.loki_push_api_endpoint_joined,
+            self._on_loki_push_api_endpoint_joined,
+        )
+        self.framework.observe(
+            self.loki_consumer.on.loki_push_api_endpoint_departed,
+            self._on_loki_push_api_endpoint_departed,
+        )
+
     def _on_install(self, _):
         """Set the right port on the K8s service on installation of the Juju app."""
         self._patch_k8s_service()
@@ -91,12 +106,40 @@ class SpringMusicCharm(CharmBase):
     def _on_upgrade_charm(self, _):
         self._update_and_restart_spring_music()
 
+    def _on_loki_push_api_endpoint_joined(self, _):
+        logger.debug("Loki endpoint joined")
+        self._update_and_restart_spring_music()
+
+    def _on_loki_push_api_endpoint_departed(self, _):
+        logger.debug("Loki endpoint departed")
+        self._update_and_restart_spring_music()
+
     def _update_and_restart_spring_music(self):
         container = self.unit.get_container("application")
 
         if not container.can_connect():
             self.unit.status = WaitingStatus("container 'application' not yet ready")
             return
+
+        environment = {
+            "JUJU_CHARM": self.meta.name,
+            "JUJU_MODEL": self.model.name,
+            "JUJU_MODEL_UUID": self.model.uuid,
+            "JUJU_APPLICATION": self.app.name,
+            "JUJU_UNIT": self.unit.name,
+        }
+
+        loki_api_data = self.loki_consumer.loki_push_api 
+        if len(loki_api_data) > 0:
+            environment["SPRING_PROFILES_ACTIVE"] = "production,loki-logging"
+            environment["LOKI_PUSH_API_URL"] = loki_api_data[0].get("url")
+        else:
+            # When Loki should not be set up, ensure we "zero out" the
+            # LOKI_PUSH_API_URL env var to remove its value when combining the
+            # new layer with a previous one that did set LOKI_PUSH_API_URL.
+            environment["SPRING_PROFILES_ACTIVE"] = "production"
+
+        logger.debug(f"Setting Loki Push API URL to: {environment.get('LOKI_PUSH_API_URL')}")
 
         updated_pebble_layer = {
             "summary": "application layer",
@@ -106,6 +149,7 @@ class SpringMusicCharm(CharmBase):
                     "override": "replace",
                     "summary": "Spring Music application",
                     "command": "/cnb/process/web",
+                    "environment": environment,
                 },
             },
         }

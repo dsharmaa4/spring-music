@@ -1,0 +1,10 @@
+alert: SpringMusicLokiLogsSendErrors
+expr: loki4j_send_errors_total{%%juju_topology%%} > 0
+for: 0m
+labels:
+  severity: critical
+annotations:
+  summary: Spring Music unit {{ $labels.juju_model }}/{{ $labels.juju_unit }} cannot send logs
+  description: >
+    The Spring Music unit {{ $labels.juju_model }} {{ $labels.juju_unit }} cannot send logs to the configured Loki endpoint
+    LABELS = {{ $labels }}

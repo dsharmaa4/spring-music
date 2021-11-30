@@ -4,7 +4,13 @@
 
 This repository is a fork of Spring Music, a famous Spring Boot demo application, together with a charmed operator that enable [Juju](https://juju.is) to run the application on top of Kubernetes.
 
-The Spring Music charm operators integrates with other charmed operators, [Prometheus](https://charmhub.io/prometheus-k8s) and [Grafana](https://charmhub.io/grafana-k8s) to expose and consume the metrics made available by the [Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#actuator).
+The Spring Music charm operators integrates with other charmed operators, specifically:
+
+* expose the [Spring Boot Actuator](https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#actuator) metrics endpoint to [Prometheus](https://charmhub.io/prometheus-k8s), as well as other charms understanding the `prometheus_scrape` relation interface, like [Grafana Agent](https://charmhub.io/grafana-agent-k8s);
+* send to [Loki](https://charmhub.io/loki-k8s) the logs produced by the application over [Logback](https://logback.qos.ch/)
+and [Grafana](https://charmhub.io/grafana-k8s);
+* provide a Grafana dashboard to the [Grafana](https://charmhub.io/grafana-k8s) charmed operator to consume the metrics and logs data exposed to other charmed operators.
+
 <div style="clear: both"></div>
 
 ## Setup
@@ -88,8 +94,10 @@ Follow the [LMA Light on MicroK8s](https://juju.is/docs/lma2/on%20MicroK8s) tuto
 juju switch spring
 juju consume lma.prometheus-scrape prometheus
 juju consume lma.grafana-dashboards grafana
+juju consume lma.loki-logging loki
 juju add-relation spring-music prometheus
 juju add-relation spring-music grafana
+juju add-relation spring-music loki
 ```
 
 ## Utility scripts

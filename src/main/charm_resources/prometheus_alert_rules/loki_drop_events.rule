@@ -1,0 +1,10 @@
+alert: SpringMusicLokiLogsDropped
+expr: loki4j_drop_events_total{%%juju_topology%%} > 0
+for: 0m
+labels:
+  severity: critical
+annotations:
+  summary: Spring Music unit {{ $labels.juju_model }}/{{ $labels.juju_unit }} dropping logs
+  description: >
+    The Spring Music unit {{ $labels.juju_model }} {{ $labels.juju_unit }} is dropping logs due to backpressure
+    LABELS = {{ $labels }}

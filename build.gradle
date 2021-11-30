@@ -43,6 +43,11 @@ dependencies {
     // Expose a Prometheus metrics endpoint for the Spring Boot Actuator
     implementation "io.micrometer:micrometer-registry-prometheus"
 
+    // Appended to push logs directly to Loki's Push API
+    implementation "com.github.loki4j:loki-logback-appender:1.2.0"
+    // Support for conditionals in logback-spring.xml
+    implementation "org.codehaus.janino:janino:3.1.6"
+
     // JPA Persistence
     runtimeOnly "org.apache.commons:commons-pool2:2.6.0"
     runtimeOnly "com.h2database:h2"
