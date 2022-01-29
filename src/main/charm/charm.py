@@ -129,10 +129,10 @@ class SpringMusicCharm(CharmBase):
             "JUJU_UNIT": self.unit.name,
         }
 
-        loki_api_data = self.loki_consumer.loki_push_api 
-        if len(loki_api_data) > 0:
+        loki_endpoints = self.loki_consumer.loki_endpoints 
+        if len(loki_endpoints) > 0:
             environment["SPRING_PROFILES_ACTIVE"] = "production,loki-logging"
-            environment["LOKI_PUSH_API_URL"] = loki_api_data[0].get("url")
+            environment["LOKI_PUSH_API_URL"] = loki_endpoints[0].get("url")
         else:
             # When Loki should not be set up, ensure we "zero out" the
             # LOKI_PUSH_API_URL env var to remove its value when combining the
