@@ -29,6 +29,9 @@ from kubernetes_service import K8sServicePatch, PatchFailed
 from src.main.charm_libs.grafana_k8s.v0.grafana_dashboard import GrafanaDashboardProvider
 from src.main.charm_libs.loki_k8s.v0.loki_push_api import LokiPushApiConsumer
 from src.main.charm_libs.prometheus_k8s.v0.prometheus_scrape import MetricsEndpointProvider
+from src.main.charm_libs.traefik_k8s.v0.ingress import IngressPerAppRequirer
+
+from urllib.parse import urlparse
 
 logger = logging.getLogger(__name__)
 
@@ -46,6 +49,8 @@ class SpringMusicCharm(CharmBase):
         self._port = 8080
 
         self._stored.set_default(k8s_service_patched=False)
+
+        self.ingress = IngressPerAppRequirer(charm=self, port=self._port)
 
         self.loki_consumer = LokiPushApiConsumer(
             self,
@@ -78,6 +83,16 @@ class SpringMusicCharm(CharmBase):
         )
 
         self.framework.observe(
+            self.on.ingress_relation_joined, self._on_ingress_changed
+        )
+        self.framework.observe(
+            self.on.ingress_relation_changed, self._on_ingress_changed
+        )
+        self.framework.observe(
+            self.on.ingress_relation_broken, self._on_ingress_changed
+        )
+
+        self.framework.observe(
             self.on.install, self._on_install
         )
         self.framework.observe(
@@ -103,6 +118,9 @@ class SpringMusicCharm(CharmBase):
     def _on_application_pebble_ready(self, _):
         self._update_and_restart_spring_music()
 
+    def _on_ingress_changed(self, _):
+        self._update_and_restart_spring_music()
+
     def _on_upgrade_charm(self, _):
         self._update_and_restart_spring_music()
 
@@ -121,7 +139,13 @@ class SpringMusicCharm(CharmBase):
             self.unit.status = WaitingStatus("container 'application' not yet ready")
             return
 
+        # When the ingress is using subpaths to route to out application, we need to tell
+        # Spring Music to adjust the root of its API accordingly
+        context_path = urlparse(self.ingress.url).path if self.ingress.is_ready() else "/"
+        logger.debug("Servlet context path: %s; ingress url: %s", context_path, self.ingress.url)
+
         environment = {
+            "SERVER_SERVLET_CONTEXT_PATH": context_path,
             "JUJU_CHARM": self.meta.name,
             "JUJU_MODEL": self.model.name,
             "JUJU_MODEL_UUID": self.model.uuid,

@@ -19,6 +19,9 @@ requires:
   logging:
     interface: loki_push_api
     limit: 1
+  ingress:
+    interface: ingress
+    limit: 1
 
 provides:
   metrics-endpoint:
