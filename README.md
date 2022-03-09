@@ -2,7 +2,7 @@
 
 <img src="images/spring-boot+juju.png" style="width: 30%; float: right"/>
 
-This repository is a fork of Spring Music, a famous Spring Boot demo application, together with a charmed operator that enable [Juju](https://juju.is) to run the application on top of Kubernetes.
+This repository is a fork of [Spring Music](https://github.com/cloudfoundry-samples/spring-music), a famous Spring Boot demo application, together with a charmed operator that enables [Juju](https://juju.is) to run the application on top of Kubernetes.
 
 The Spring Music charm operators integrates with other charmed operators, specifically:
 

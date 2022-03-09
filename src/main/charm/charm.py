@@ -17,12 +17,7 @@ import logging
 from ops.charm import CharmBase
 from ops.framework import StoredState
 from ops.main import main
-from ops.model import (
-    ActiveStatus,
-    MaintenanceStatus,
-    ModelError,
-    WaitingStatus
-)
+from ops.model import ActiveStatus, MaintenanceStatus, ModelError, WaitingStatus
 
 from kubernetes_service import K8sServicePatch, PatchFailed
 
@@ -82,25 +77,11 @@ class SpringMusicCharm(CharmBase):
             dashboards_path="src/main/charm_resources/grafana_dashboards",
         )
 
-        self.framework.observe(
-            self.on.ingress_relation_joined, self._on_ingress_changed
-        )
-        self.framework.observe(
-            self.on.ingress_relation_changed, self._on_ingress_changed
-        )
-        self.framework.observe(
-            self.on.ingress_relation_broken, self._on_ingress_changed
-        )
+        self.framework.observe(self.ingress.on.ingress_changed, self._on_ingress_changed)
 
-        self.framework.observe(
-            self.on.install, self._on_install
-        )
-        self.framework.observe(
-            self.on.application_pebble_ready, self._on_application_pebble_ready
-        )
-        self.framework.observe(
-            self.on.upgrade_charm, self._on_upgrade_charm
-        )
+        self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.application_pebble_ready, self._on_application_pebble_ready)
+        self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
 
         self.framework.observe(
             self.loki_consumer.on.loki_push_api_endpoint_joined,
@@ -153,7 +134,7 @@ class SpringMusicCharm(CharmBase):
             "JUJU_UNIT": self.unit.name,
         }
 
-        loki_endpoints = self.loki_consumer.loki_endpoints 
+        loki_endpoints = self.loki_consumer.loki_endpoints
         if len(loki_endpoints) > 0:
             environment["SPRING_PROFILES_ACTIVE"] = "production,loki-logging"
             environment["LOKI_PUSH_API_URL"] = loki_endpoints[0].get("url")

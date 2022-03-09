@@ -1,7 +1,7 @@
 # Copyright 2022 Canonical Ltd.
 # See LICENSE file for licensing details.
 
-"""# Interface Library for ingress.
+r"""# Interface Library for ingress.
 
 This library wraps relation endpoints using the `ingress` interface
 and provides a Python API for both requesting and providing per-application
@@ -9,31 +9,46 @@ ingress, with load-balancing occurring across all units.
 
 ## Getting Started
 
-To get started using the library, you just need to fetch the library using `charmcraft`. **Note
-that you also need to add the `serialized_data_interface` dependency to your charm's
-`requirements.txt`.**
+To get started using the library, you just need to fetch the library using `charmcraft`.
+**Note that you also need to add the `serialized_data_interface` dependency to your
+charm's `requirements.txt`.**
 
 ```shell
 cd some-charm
-charmcraft fetch-lib charms.traefik-k8s.v0.ingress
-echo "serialized_data_interface" >> requirements.txt
+charmcraft fetch-lib charms.traefik_k8s.v0.ingress
+echo -e "serialized_data_interface\n" >> requirements.txt
+```
+
+In the `metadata.yaml` of the charm, add the following:
+
+```yaml
+requires:
+    ingress:
+        interface: ingress
+        limit: 1
 ```
 
 Then, to initialise the library:
 
 ```python
 # ...
-from charms.traefik-k8s.v0.ingress import IngressPerAppRequirer
+from charms.traefik_k8s.v0.ingress import IngressPerAppRequirer
 
 class SomeCharm(CharmBase):
   def __init__(self, *args):
     # ...
     self.ingress = IngressPerAppRequirer(self, port=80)
-    self.framework.observe(self.ingress.on.ready, self._handle_ingress)
+    # The following event is triggered when the ingress URL to be used
+    # by this deployment of the `SomeCharm` changes or there is no longer
+    # an ingress URL available, that is, `self.ingress_per_unit` would
+    # return `None`.
+    self.framework.observe(
+        self.ingress.on.ingress_changed, self._handle_ingress
+    )
     # ...
 
     def _handle_ingress(self, event):
-        log.info("This app's ingress URL: %s", self.ingress.url)
+        logger.info("This app's ingress URL: %s", self.ingress.url)
 ```
 """
 
@@ -41,21 +56,31 @@ import logging
 from typing import Optional
 
 from ops.charm import CharmBase, RelationEvent, RelationRole
-from ops.framework import EventSource
+from ops.framework import EventSource, StoredState
 from ops.model import Relation
-from serialized_data_interface import EndpointWrapper
-from serialized_data_interface.errors import RelationDataError, UnversionedRelation
-from serialized_data_interface.events import EndpointWrapperEvents
+
+try:
+    from serialized_data_interface import EndpointWrapper
+    from serialized_data_interface.errors import RelationDataError, UnversionedRelation
+    from serialized_data_interface.events import EndpointWrapperEvents
+except ImportError:
+    import os
+
+    library_name = os.path.basename(__file__)
+    raise ModuleNotFoundError(
+        "To use the '{}' library, you must include "
+        "the '{}' package in your dependencies".format(library_name, "serialized_data_interface")
+    ) from None  # Suppress original ImportError
 
 # The unique Charmhub library identifier, never change it
-LIBID = "DERP"  # can't register a library until the charm is in the store 9_9
+LIBID = "e6de2a5cd5b34422a204668f3b8f90d2"
 
 # Increment this major API version when introducing breaking changes
 LIBAPI = 0
 
 # Increment this PATCH version before using `charmcraft publish-lib` or reset
 # to 0 if you are raising the major API version
-LIBPATCH = 1
+LIBPATCH = 3
 
 log = logging.getLogger(__name__)
 
@@ -157,6 +182,29 @@ class IngressPerAppProvider(EndpointWrapper):
             raise RelationDataMismatchError(relation, other_app)
         return False
 
+    @property
+    def proxied_endpoints(self):
+        """Returns the ingress settings provided to applications by this IngressPerAppProvider.
+
+        For example, when this IngressPerAppProvider has provided the
+        `http://foo.bar/my-model.my-app` URL to the my-app application, the returned dictionary
+        will be:
+
+        ```
+        {
+            "my-app": {
+                "url": "http://foo.bar/my-model.my-app"
+            }
+        }
+        ```
+        """
+        return {
+            ingress_relation.app.name: self.unwrap(ingress_relation)[self.charm.app].get(
+                "ingress", {}
+            )
+            for ingress_relation in self.charm.model.relations[self.endpoint]
+        }
+
 
 class IngressPerAppRequest:
     """A request for per-application ingress."""
@@ -210,8 +258,21 @@ class RelationDataMismatchError(RelationDataError):
     """Data from different units do not match where they should."""
 
 
+class IngressPerAppConfigurationChangeEvent(RelationEvent):
+    """Event representing a change in the data sent by the ingress."""
+
+
+class IngressPerAppRequirerEvents(EndpointWrapperEvents):
+    """Container for IUP events."""
+
+    ingress_changed = EventSource(IngressPerAppConfigurationChangeEvent)
+
+
 class IngressPerAppRequirer(EndpointWrapper):
     """Implementation of the requirer of the ingress relation."""
+
+    on = IngressPerAppRequirerEvents()
+    _stored = StoredState()
 
     ROLE = RelationRole.requires.name
     INTERFACE = "ingress"
@@ -244,8 +305,25 @@ class IngressPerAppRequirer(EndpointWrapper):
             port: the port of the service
         """
         super().__init__(charm, endpoint)
+
+        self._stored.set_default(current_url=None)
+
         if port and charm.unit.is_leader():
             self.auto_data = self._complete_request(host or "", port)
+
+        self.framework.observe(
+            self.charm.on[self.endpoint].relation_changed, self._emit_ingress_change_event
+        )
+        self.framework.observe(
+            self.charm.on[self.endpoint].relation_broken, self._emit_ingress_change_event
+        )
+
+    def _emit_ingress_change_event(self, event):
+        # Avoid spurious events, emit only when URL changes
+        new_url = self.url
+        if self._stored.current_url != new_url:
+            self._stored.current_url = new_url
+            self.on.ingress_changed.emit(self.relation)
 
     def _complete_request(self, host: Optional[str], port: int):
         if not host:
