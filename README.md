@@ -60,10 +60,12 @@ Assuming you are using MicroK8s with the `registry` add on, build the OCI image 
 
 ```sh
 ./gradlew bootBuildImage --imageName=localhost:32000/spring-music:latest
+docker build . -f Dockerfile.local -t localhost:32000/spring-music:latest
 docker push localhost:32000/spring-music:latest
 ```
 
 The `localhost:32000` is the location of the registry integrated in MicroK8s.
+The `docker build . -f Dockerfile.local ...` command removes from the Docker image built by Gradle a number of overly large image labels that are known to cause [issues with containerd](https://github.com/containerd/containerd/issues/6123) runtimes.
 
 ### Building the Spring Music charm
 
