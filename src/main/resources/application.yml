@@ -10,6 +10,12 @@ management:
   endpoint:
     health:
       show-details: always
+#    configprops:
+#      show-values: always
+#      keys-to-sanitize:
+#    env:
+#      show-values: always
+#      keys-to-sanitize:
 
 ---
 spring:
@@ -31,10 +37,6 @@ spring:
     driver-class-name: com.mysql.jdbc.Driver
     username:
     password:
-  jpa:
-    properties:
-      hibernate:
-        dialect: org.hibernate.dialect.MySQL55Dialect
 
 ---
 spring:
